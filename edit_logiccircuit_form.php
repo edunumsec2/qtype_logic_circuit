@@ -83,6 +83,7 @@ class qtype_logiccircuit_edit_form extends question_edit_form {
             .qtype-logiccircuit-component-picker .qtype-logiccircuit-component-name {
                 font-size: 0.85rem;
                 line-height: 1.2;
+                word-wrap: anywhere;
             }
         </style>');
 
