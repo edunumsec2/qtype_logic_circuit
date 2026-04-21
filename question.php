@@ -40,16 +40,23 @@ class qtype_logiccircuit_question extends question_graded_automatically {
         debugging("Summarising responses...", DEBUG_DEVELOPER);
         debugging(print_r($response, true), DEBUG_DEVELOPER);
 
-        $result = "";
-        $testResults = $response['test_results'];
-        $responseAnalysis = $this->analyse_response($testResults);
-        $testSummary = $responseAnalysis['test_summary'];
-
-        foreach ($testSummary as $testName => $testResult) {
-            $result .= "Test $testName : $testResult\n";
+        if (!isset($response['test_results']) || trim($response['test_results']) === '') {
+            return null;
         }
 
-        return $result;
+        $responseanalysis = $this->get_response_analysis($response['test_results']);
+        $testsummary = $responseanalysis['test_summary'];
+        if (empty($testsummary)) {
+            return '';
+        }
+
+        $result = '';
+
+        foreach ($testsummary as $testname => $testresult) {
+            $result .= "Test $testname : $testresult\n";
+        }
+
+        return rtrim($result);
     }
 
     // TODO do we need to classify the response ?
@@ -118,9 +125,12 @@ class qtype_logiccircuit_question extends question_graded_automatically {
         debugging("Grading response...", DEBUG_DEVELOPER);
         debugging(print_r($response, true), DEBUG_DEVELOPER);
 
-        $testResults = $response['test_results'];
-        $responseAnalysis = $this->analyse_response($testResults);
-        $fraction = $responseAnalysis['fraction'];
+        if (!isset($response['test_results']) || trim($response['test_results']) === '') {
+            $fraction = 0;
+        } else {
+            $responseanalysis = $this->get_response_analysis($response['test_results']);
+            $fraction = $responseanalysis['fraction'];
+        }
 
         return array($fraction, question_state::graded_state_for_fraction($fraction));
     }
@@ -249,6 +259,17 @@ class qtype_logiccircuit_question extends question_graded_automatically {
         }
 
         return is_array($nesteddecoded) ? $nesteddecoded : $decoded;
+    }
+
+    private function get_response_analysis(string $testresults): array {
+        try {
+            return $this->analyse_response($testresults);
+        } catch (TypeError | SyntaxError $error) {
+            return array(
+                'fraction' => 0,
+                'test_summary' => []
+            );
+        }
     }
 
     private function is_valid_answer_payload($answer): bool {

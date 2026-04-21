@@ -79,6 +79,15 @@ final class question_test extends \advanced_testcase {
 		);
 	}
 
+	public function test_grading_returns_zero_when_test_results_are_missing(): void {
+		$question = \test_question_maker::make_question('logiccircuit', 'test');
+
+		$this->assertEquals(
+			array(0, question_state::$gradedwrong),
+			$question->grade_response(array('answer' => $this->jsonAnswerString))
+		);
+	}
+
 	public function test_is_same_response_handles_scalar_json_answers(): void {
 		$question = \test_question_maker::make_question('logiccircuit', 'test');
 
@@ -130,6 +139,24 @@ final class question_test extends \advanced_testcase {
 			'answer' => $this->jsonAnswerString,
 			'test_results' => '{"testCaseResults":[["broken"]]}',
 		)));
+	}
+
+	public function test_summarise_response_returns_null_when_test_results_are_missing(): void {
+		$question = \test_question_maker::make_question('logiccircuit', 'test');
+
+		$this->assertNull($question->summarise_response(array('answer' => $this->jsonAnswerString)));
+	}
+
+	public function test_summarise_response_lists_test_results(): void {
+		$question = \test_question_maker::make_question('logiccircuit', 'test');
+
+		$this->assertStringContainsString(
+			'Test 0 0 → 1 0 0 0 : pass',
+			$question->summarise_response(array(
+				'answer' => $this->jsonAnswerString,
+				'test_results' => $this->correctTestResults,
+			))
+		);
 	}
 
 	public function test_get_question_summary(): void {
