@@ -70,8 +70,8 @@ class qtype_logiccircuit_question extends question_graded_automatically {
         debugging(print_r($response['test_results'], true), DEBUG_DEVELOPER);
 
         try {
-            json5_decode($response['answer']);
-            json5_decode($response['test_results']);
+            $this->decode_response_json($response['answer']);
+            $this->decode_response_json($response['test_results']);
         } catch (TypeError | SyntaxError $error) {
             //error_log($error->getMessage());
             return false;
@@ -89,25 +89,24 @@ class qtype_logiccircuit_question extends question_graded_automatically {
     }
 
     public function is_same_response(array $prevresponse, array $newresponse) {
-        error_log("Is same response ?");
-        error_log(print_r($prevresponse, true));
-        error_log(print_r($newresponse, true));
-
         if(!$this->notEmptyResponse($prevresponse) && !$this->notEmptyResponse($newresponse)) {
             return true;
         } else if(!$this->notEmptyResponse($prevresponse)) {
             return false;
         } else {
-            $prevResponseParsed = json5_decode($prevresponse['answer'], true);
-            $newResponseParsed = json5_decode($newresponse['answer'], true);
-
-            $diff = array_diff($prevResponseParsed, $newResponseParsed);
-
-            if(empty($diff[0])) {
-                return true;
-            } else {
-                return false;
+            try {
+                $prevresponseparsed = $this->decode_response_json($prevresponse['answer']);
+                $newresponseparsed = $this->decode_response_json($newresponse['answer']);
+            } catch (TypeError | SyntaxError $error) {
+                return question_utils::arrays_same_at_key_missing_is_blank(
+                    $prevresponse,
+                    $newresponse,
+                    'answer'
+                );
             }
+
+            return $this->normalise_response_value($prevresponseparsed) ===
+                $this->normalise_response_value($newresponseparsed);
         }
     }
 
@@ -150,12 +149,25 @@ class qtype_logiccircuit_question extends question_graded_automatically {
         $totalTests = 0;
         $successfullTests = 0;
 
-        $testResultsArray = json5_decode($testResults, true);
+        $testResultsArray = $this->decode_response_json($testResults);
+        if (!is_array($testResultsArray) || empty($testResultsArray) || !isset($testResultsArray[0])) {
+            return array(
+                'fraction' => 0,
+                'test_summary' => []
+            );
+        }
+
         $firstOfResultsArray = $testResultsArray[0];
+        if (!is_array($firstOfResultsArray) || !isset($firstOfResultsArray['testCaseResults'])) {
+            return array(
+                'fraction' => 0,
+                'test_summary' => []
+            );
+        }
 
         $testCaseResults = $firstOfResultsArray['testCaseResults'];
 
-        if($testCaseResults) {
+        if($testCaseResults && is_array($testCaseResults)) {
             $testSummaryArray = array();
 
             foreach ($testCaseResults as $testCaseResult) {
@@ -191,5 +203,51 @@ class qtype_logiccircuit_question extends question_graded_automatically {
     private function notEmptyResponse(array $response) {
         return (isset($response['answer']) && !empty($response['answer'])) &&
             (isset($response['test_results']) && !empty($response['test_results']));
+    }
+
+    private function normalise_response_value($value) {
+        if (!is_array($value)) {
+            return $value;
+        }
+
+        $normalisedarray = array();
+        foreach ($value as $key => $item) {
+            $normalisedarray[$key] = $this->normalise_response_value($item);
+        }
+
+        if (!$this->is_list_array($normalisedarray)) {
+            ksort($normalisedarray);
+        }
+
+        return $normalisedarray;
+    }
+
+    private function is_list_array(array $array) {
+        if ($array === array()) {
+            return true;
+        }
+
+        return array_keys($array) === range(0, count($array) - 1);
+    }
+
+    private function decode_response_json(string $value) {
+        $decoded = json5_decode($value, true);
+
+        if (!is_string($decoded)) {
+            return $decoded;
+        }
+
+        $nestedcandidate = trim($decoded);
+        if ($nestedcandidate === '') {
+            return $decoded;
+        }
+
+        try {
+            $nesteddecoded = json5_decode($nestedcandidate, true);
+        } catch (TypeError | SyntaxError $error) {
+            return $decoded;
+        }
+
+        return is_array($nesteddecoded) ? $nesteddecoded : $decoded;
     }
 }

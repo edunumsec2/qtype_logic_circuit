@@ -61,6 +61,50 @@ final class question_test extends \advanced_testcase {
 		);
 	}
 
+	public function test_is_same_response_handles_scalar_json_answers(): void {
+		$question = \test_question_maker::make_question('logiccircuit', 'test');
+
+		$this->assertTrue($question->is_same_response(
+			array('answer' => '"uploaded answer"', 'test_results' => $this->correctTestResults),
+			array('answer' => '"uploaded answer"', 'test_results' => $this->incorrectTestResults)
+		));
+
+		$this->assertFalse($question->is_same_response(
+			array('answer' => '"uploaded answer"', 'test_results' => $this->correctTestResults),
+			array('answer' => '"different answer"', 'test_results' => $this->correctTestResults)
+		));
+	}
+
+	public function test_is_same_response_handles_double_encoded_answer_json(): void {
+		$question = \test_question_maker::make_question('logiccircuit', 'test');
+
+		$this->assertTrue($question->is_same_response(
+			array('answer' => json_encode($this->jsonAnswerString), 'test_results' => $this->correctTestResults),
+			array('answer' => $this->jsonAnswerString, 'test_results' => $this->correctTestResults)
+		));
+	}
+
+	public function test_is_same_response_ignores_object_key_order(): void {
+		$question = \test_question_maker::make_question('logiccircuit', 'test');
+
+		$this->assertTrue($question->is_same_response(
+			array('answer' => '{"b": 2, "a": 1}', 'test_results' => $this->correctTestResults),
+			array('answer' => '{"a": 1, "b": 2}', 'test_results' => $this->correctTestResults)
+		));
+	}
+
+	public function test_grading_handles_double_encoded_test_results(): void {
+		$question = \test_question_maker::make_question('logiccircuit', 'test');
+
+		$this->assertEquals(
+			array(1, question_state::$gradedright),
+			$question->grade_response(array(
+				'answer' => $this->jsonAnswerString,
+				'test_results' => json_encode($this->correctTestResults),
+			))
+		);
+	}
+
 	public function test_get_question_summary(): void {
 		$question = \test_question_maker::make_question('logiccircuit', 'test');
 		$qsummary = $question->get_question_summary();

@@ -10,8 +10,8 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'qtype_logiccircuit';
-$plugin->version  = 2026032500;
+$plugin->version  = 2026042100;
 $plugin->requires = 2022040100;  // Moodle 4.0.
 $plugin->supported = [400, 530];
 $plugin->maturity  = MATURITY_RC;
-$plugin->release  = 'v0.3.1';
+$plugin->release  = 'v0.3.2';
