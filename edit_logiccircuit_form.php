@@ -83,7 +83,7 @@ class qtype_logiccircuit_edit_form extends question_edit_form {
     }
 
     public function validation($data, $files) {
-        $errors = array();
+        $errors = parent::validation($data, $files);
         $initState = $data['initialstate'];
 
         if (empty($initState)) {
