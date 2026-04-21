@@ -35,9 +35,20 @@ This plugin allows for the creation of logic circuit questions in Moodle quizzes
 2. Navigate to `Site administration -> Plugins -> Install plugins`
 3. Drop the contents of thie repo in a zip file and click `Install plugin from the ZIP file`
 
+**In Development Mode**
+
+This is described for local development on macOS.
+
+ 1. Download MAMP following steps here: https://docs.moodle.org/501/en/Installation_Package_for_macOS
+ 2. Symlink the development folder to the local install. For instance:
+    ```
+    ln -s $HOME/dev/qtype_logic_circuit /Applications/MAMP/htdocs/moodle405/question/type/logiccircuit
+    ```
+ 3. Go to http://localhost:8888/moodle/admin and click "Upgrade Moodle database now" to install/upgrade the plugin if necessary.
+ 4. Start Moodle on MAMP and navigate to http://localhost:8888/moodle to test the plugin. Default credentials are admin / 12345.
+ 5. If changes don't show up, try purging the Moodle caches by going to `Site administration -> Development -> Purge all caches`.
+
+
 ## Testing
 
 The unit tests can be executed using the `phpunit` command inside a Moodle project.
-
-
-

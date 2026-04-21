@@ -11,8 +11,8 @@
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Checks file access for true-false questions.
- * @package  qtype_truefalse
+ * Checks file access for logiccircuit questions.
+ * @package  qtype_logiccircuit
  * @category files
  * @param stdClass $course course object
  * @param stdClass $cm course module object
