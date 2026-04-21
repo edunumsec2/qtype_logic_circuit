@@ -85,17 +85,22 @@
                     style="margin: 1rem">
                     {{#str}} saveandruntests, qtype_logiccircuit {{/str}}
                 </button>
-                <i
+                <span
                     id="result_not_uploaded"
-                    class="fa fa-2x fa-warning text-warning"
-                    title="{{#str}} resultnotuploaded, qtype_logiccircuit {{/str}}">
-                </i>
-                <i
+                    class="text-warning"
+                    style="margin-left: 1rem;"
+                    role="status">
+                    <i class="fa fa-warning" aria-hidden="true"></i>
+                    {{#str}} resultnotuploaded, qtype_logiccircuit {{/str}}
+                </span>
+                <span
                     id="new_result_uploaded"
-                    class="fa fa-2x fa-circle-check"
-                    style="color: green;"
-                    title="{{#str}} resultuploaded, qtype_logiccircuit {{/str}}">
-                </i>
+                    class="text-success"
+                    style="margin-left: 1rem;"
+                    role="status">
+                    <i class="fa fa-circle-check" aria-hidden="true"></i>
+                    {{#str}} resultuploaded, qtype_logiccircuit {{/str}}
+                </span>
             </div>
 
             <button

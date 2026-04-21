@@ -12,8 +12,8 @@ define(['jquery'], function($) {
             sessionStorage.clear('logic/logic-editor');
 
             const nextNavButton = $('input[type="submit"]#mod_quiz-next-nav.btn');
-            const resultNotUploadedIcon = $('i#result_not_uploaded');
-            const newResultUploadedIcon = $('i#new_result_uploaded');
+            const resultNotUploadedIcon = $('span#result_not_uploaded');
+            const newResultUploadedIcon = $('span#new_result_uploaded');
 
             const testResultsInput = $('input#test-results');
             const testResults = testResultsInput.attr('value');
