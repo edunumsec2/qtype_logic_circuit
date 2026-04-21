@@ -81,31 +81,36 @@
                     id="circuit-run-test-button"
                     type="button"
                     class="btn btn-primary"
-                    aria-label="Run tests"
+                    aria-label="{{#str}} runtests, qtype_logiccircuit {{/str}}"
                     style="margin: 1rem">
-                    Save and run tests
+                    {{#str}} saveandruntests, qtype_logiccircuit {{/str}}
                 </button>
-                <i
+                <span
                     id="result_not_uploaded"
-                    class="fa fa-2x fa-warning text-warning"
-                    title="Votre réponse n'a pas encore été téléversé ">
-                </i>
-                <i
+                    class="text-warning"
+                    style="margin-left: 1rem;"
+                    role="status">
+                    <i class="fa fa-warning" aria-hidden="true"></i>
+                    {{#str}} resultnotuploaded, qtype_logiccircuit {{/str}}
+                </span>
+                <span
                     id="new_result_uploaded"
-                    class="fa fa-2x fa-circle-check"
-                    style="color: green;"
-                    title="Votre réponse a été retenu">
-                </i>
+                    class="text-success"
+                    style="margin-left: 1rem;"
+                    role="status">
+                    <i class="fa fa-circle-check" aria-hidden="true"></i>
+                    {{#str}} resultuploaded, qtype_logiccircuit {{/str}}
+                </span>
             </div>
 
             <button
                 id="circuit-reset-button"
                 type="button"
                 class="btn btn-warning"
-                aria-label="Reset circuit"
+                aria-label="{{#str}} resetcircuit, qtype_logiccircuit {{/str}}"
                 style="margin: 1rem"
                 data-init-state="{{init_state}}">
-                Reset the circuit
+                {{#str}} resetthecircuit, qtype_logiccircuit {{/str}}
             </button>
         </div>
 

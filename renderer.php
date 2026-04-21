@@ -36,6 +36,8 @@ class qtype_logiccircuit_renderer extends qtype_renderer {
 
         if (debugging('', DEBUG_DEVELOPER)) {
             $is_debug = true;
+        } else {
+            $is_debug = false;
         }
 
         $PAGE->requires->js(new url('https://logic.modulo-info.ch/simulator/lib/bundle.js'));
