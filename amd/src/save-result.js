@@ -17,7 +17,7 @@ define(['jquery'], function($) {
     return {
         init: function() {
             // Remove this as soon as the autosave to session storage is deactivated in the logic circuit editor
-            sessionStorage.clear('logic/logic-editor');
+            sessionStorage.removeItem('logic/logic-editor');
 
             const nextNavButton = $('input[type="submit"]#mod_quiz-next-nav.btn');
             const resultNotUploadedIcon = $('span#result_not_uploaded');
