@@ -119,7 +119,7 @@ class qtype_logiccircuit_edit_form extends question_edit_form {
             $mode_dropdown_options
         );
         $mform->setDefault('editormode', 0);
-        $mform->addRule('editormode', null, 'required', null, 'client');
+        // $mform->addRule('editormode', null, 'required', null, 'client');
         $mform->addHelpButton('editormode', 'mode_dropdown', 'qtype_logiccircuit');
         $mform->setType('editormode', PARAM_INT);
 
