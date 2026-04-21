@@ -13,5 +13,5 @@ $plugin->component = 'qtype_logiccircuit';
 $plugin->version  = 2026042100;
 $plugin->requires = 2022040100;  // Moodle 4.0.
 $plugin->supported = [400, 530];
-$plugin->maturity  = MATURITY_RC;
-$plugin->release  = 'v0.3.2';
+$plugin->maturity  = MATURITY_STABLE;
+$plugin->release  = 'v1.0.0';
