@@ -38,7 +38,13 @@ final class question_test extends \advanced_testcase {
 		$this->assertFalse($question->is_complete_response(array()));
 		$this->assertFalse($question->is_complete_response(array('answer' => " ")));
 		$this->assertFalse($question->is_complete_response(array('answer' => "", 'test_results' => " ")));
-		$this->assertTrue($question->is_complete_response(array('answer' => $this->jsonAnswerString, 'test_results' => $this->jsonAnswerString)));
+		$this->assertFalse($question->is_complete_response(array('answer' => '"uploaded answer"', 'test_results' => $this->correctTestResults)));
+		$this->assertFalse($question->is_complete_response(array('answer' => $this->jsonAnswerString, 'test_results' => $this->jsonAnswerString)));
+		$this->assertTrue($question->is_complete_response(array('answer' => $this->jsonAnswerString, 'test_results' => $this->correctTestResults)));
+		$this->assertTrue($question->is_complete_response(array(
+			'answer' => json_encode($this->jsonAnswerString),
+			'test_results' => json_encode($this->correctTestResults),
+		)));
 
 		$incorrectJSON = substr($this->jsonAnswerString, 0, -5);
 		$this->assertFalse($question->is_complete_response(array('answer' => $incorrectJSON, 'test_results' => $incorrectJSON)));

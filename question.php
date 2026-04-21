@@ -66,19 +66,23 @@ class qtype_logiccircuit_question extends question_graded_automatically {
             return false;
         }
 
+        if (trim($response['answer']) === '' || trim($response['test_results']) === '') {
+            return false;
+        }
+
         debugging(print_r($response['answer'], true), DEBUG_DEVELOPER);
         debugging(print_r($response['test_results'], true), DEBUG_DEVELOPER);
 
         try {
-            $this->decode_response_json($response['answer']);
-            $this->decode_response_json($response['test_results']);
+            $answer = $this->decode_response_json($response['answer']);
+            $testresults = $this->decode_response_json($response['test_results']);
         } catch (TypeError | SyntaxError $error) {
             //error_log($error->getMessage());
             return false;
         }
 
-        return (array_key_exists('answer', $response) && isset($response['answer'])) &&
-            (array_key_exists('test_results', $response) && isset($response['test_results']));
+        return $this->is_valid_answer_payload($answer) &&
+            $this->is_valid_test_results_payload($testresults);
     }
 
     public function get_validation_error(array $response) {
@@ -249,5 +253,21 @@ class qtype_logiccircuit_question extends question_graded_automatically {
         }
 
         return is_array($nesteddecoded) ? $nesteddecoded : $decoded;
+    }
+
+    private function is_valid_answer_payload($answer): bool {
+        return is_array($answer) && !empty($answer);
+    }
+
+    private function is_valid_test_results_payload($testresults): bool {
+        if (!is_array($testresults) || empty($testresults)) {
+            return false;
+        }
+
+        if (isset($testresults['testCaseResults']) && is_array($testresults['testCaseResults'])) {
+            return true;
+        }
+
+        return isset($testresults[0]['testCaseResults']) && is_array($testresults[0]['testCaseResults']);
     }
 }
