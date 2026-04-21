@@ -31,9 +31,60 @@ class qtype_logiccircuit_edit_form extends question_edit_form {
         global $PAGE;
 
         $PAGE->requires->js(new url('https://logic.modulo-info.ch/simulator/lib/bundle.js'));
+        $PAGE->requires->js_call_amd('qtype_logiccircuit/component-picker', 'init');
 
         // TODO this is a quick hack to make the editor full width
-        $mform->addElement('html', '<style>div.form-control-static[data-name=initialstate_editor] { width: 100%;}</style>');
+        $mform->addElement('html', '<style>
+            div.form-control-static[data-name=initialstate_editor] { width: 100%; }
+            .qtype-logiccircuit-component-picker { margin-top: 0.5rem; width: 100%; }
+            .qtype-logiccircuit-component-picker[hidden] { display: none !important; }
+            .qtype-logiccircuit-component-picker .qtype-logiccircuit-disclosure-title {
+                cursor: pointer;
+                font-weight: 600;
+                margin-bottom: 0.35rem;
+            }
+            .qtype-logiccircuit-component-picker .qtype-logiccircuit-disclosure-body { margin-top: 0.35rem; }
+            .qtype-logiccircuit-component-picker .qtype-logiccircuit-section { margin-bottom: 0.75rem; }
+            .qtype-logiccircuit-component-picker .qtype-logiccircuit-section-title { font-weight: 600; margin-bottom: 0.35rem; }
+            .qtype-logiccircuit-component-picker .qtype-logiccircuit-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                gap: 0.35rem;
+            }
+            .qtype-logiccircuit-component-picker .qtype-logiccircuit-component {
+                display: flex;
+                align-items: center;
+                gap: 0.4rem;
+                border: 1px solid #bfc5cc;
+                border-radius: 4px;
+                background: #fff;
+                color: #111;
+                padding: 0.35rem 0.4rem;
+                cursor: pointer;
+                text-align: left;
+            }
+            .qtype-logiccircuit-component-picker .qtype-logiccircuit-component[aria-pressed="true"] {
+                border-color: #005b94;
+                background: #e7f3ff;
+            }
+            .qtype-logiccircuit-component-picker .qtype-logiccircuit-component-icon {
+                width: 20px;
+                height: 20px;
+                flex: 0 0 20px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .qtype-logiccircuit-component-picker .qtype-logiccircuit-component-icon svg {
+                width: 20px;
+                height: 20px;
+                display: block;
+            }
+            .qtype-logiccircuit-component-picker .qtype-logiccircuit-component-name {
+                font-size: 0.85rem;
+                line-height: 1.2;
+            }
+        </style>');
 
         $mform->addElement(
             'static',
@@ -80,6 +131,8 @@ class qtype_logiccircuit_edit_form extends question_edit_form {
         $mform->disabledIf('componentstoshow', 'editormode', 'eq', 1);
         $mform->addHelpButton('componentstoshow', 'componentstoshow_text_field', 'qtype_logiccircuit');
         $mform->setType('componentstoshow', PARAM_TEXT);
+
+        $mform->addElement('html', '<div class="mb-3 row fitem"><div class="col-md-3 col-form-label d-flex pb-0 pe-md-0"></div><div class="col-md-9 d-flex flex-wrap align-items-start felement"><div id="qtype-logiccircuit-component-picker" class="qtype-logiccircuit-component-picker" hidden></div></div></div>');
     }
 
     public function validation($data, $files) {
