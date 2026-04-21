@@ -4,6 +4,7 @@ namespace qtype_logiccircuit;
 
 use qtype_logiccircuit;
 use qtype_logiccircuit_edit_form;
+use qtype_logiccircuit_renderer;
 use question_bank;
 
 defined('MOODLE_INTERNAL') || die();
@@ -13,6 +14,7 @@ require_once($CFG->dirroot . '/question/type/logiccircuit/questiontype.php');
 require_once($CFG->dirroot . '/question/engine/tests/helpers.php');
 require_once($CFG->dirroot . '/question/type/edit_question_form.php');
 require_once($CFG->dirroot . '/question/type/logiccircuit/edit_logiccircuit_form.php');
+require_once($CFG->dirroot . '/question/type/logiccircuit/renderer.php');
 
 /**
  * Unit tests for the logic circuit question definition class.
@@ -121,5 +123,16 @@ final class question_type_test extends \advanced_testcase {
         }
 
         $this->assertEquals($questiondata->options->initialstate, $actualquestiondata->options->initialstate);
+    }
+
+    public function test_renderer_normalises_double_encoded_answer_values(): void {
+        global $CFG;
+
+        $jsonanswerstring = file_get_contents($CFG->dirroot . '/question/type/logiccircuit/tests/fixtures/2bit-decoder.json');
+
+        $this->assertEquals(
+            trim($jsonanswerstring),
+            qtype_logiccircuit_renderer::normalise_json_value_for_editor(json_encode($jsonanswerstring))
+        );
     }
 }

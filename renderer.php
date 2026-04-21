@@ -8,9 +8,12 @@
  * @license    CC BY-NC-SA
  */
 
+use ColinODell\Json5\SyntaxError;
 use \core\url;
 
 defined('MOODLE_INTERNAL') || die();
+
+require_once($CFG->dirroot . '/question/type/logiccircuit/vendor/autoload.php');
 
 
 /**
@@ -30,8 +33,10 @@ class qtype_logiccircuit_renderer extends qtype_renderer {
         $response = $qa->get_last_qt_data();
         $answer_input_name = $qa->get_qt_field_name('answer');
         $test_results_input_name = $qa->get_qt_field_name('test_results');
-        $answer_value = isset($response['answer']) ? $response['answer'] : '';
-        $test_results_value = isset($response['test_results']) ? $response['test_results'] : '';
+        $answer_value = isset($response['answer']) ? self::normalise_json_value_for_editor($response['answer']) : '';
+        $test_results_value = isset($response['test_results'])
+            ? self::normalise_json_value_for_editor($response['test_results'])
+            : '';
         $readonly = $options->readonly;
 
         if (debugging('', DEBUG_DEVELOPER)) {
@@ -59,5 +64,29 @@ class qtype_logiccircuit_renderer extends qtype_renderer {
         ];
 
         return $OUTPUT->render_from_template('qtype_logiccircuit/logic-editor', $template_data);
+    }
+
+    public static function normalise_json_value_for_editor(string $value): string {
+        if ($value === '') {
+            return $value;
+        }
+
+        try {
+            $decoded = json5_decode($value, true);
+        } catch (TypeError | SyntaxError $error) {
+            return $value;
+        }
+
+        if (!is_string($decoded)) {
+            return $value;
+        }
+
+        try {
+            $nesteddecoded = json5_decode(trim($decoded), true);
+        } catch (TypeError | SyntaxError $error) {
+            return $value;
+        }
+
+        return is_array($nesteddecoded) ? trim($decoded) : $value;
     }
 }

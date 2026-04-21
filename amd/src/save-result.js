@@ -6,6 +6,14 @@
  * @license    CC BY-NC-SA
  */
 define(['jquery'], function($) {
+    const serialiseResponseValue = function(value) {
+        if (typeof value === 'string') {
+            return value;
+        }
+
+        return JSON.stringify(value);
+    };
+
     return {
         init: function() {
             // Remove this as soon as the autosave to session storage is deactivated in the logic circuit editor
@@ -16,7 +24,7 @@ define(['jquery'], function($) {
             const newResultUploadedIcon = $('span#new_result_uploaded');
 
             const testResultsInput = $('input#test-results');
-            const testResults = testResultsInput.attr('value');
+            const testResults = testResultsInput.val();
 
             //console.log(testResults);
 
@@ -58,16 +66,16 @@ define(['jquery'], function($) {
             logicEditor.addEventListener('testsexecuted', (event) => {
                 try {
                     const userAnswer = event.detail.circuit;
-                    const userAnswerString = JSON.stringify(userAnswer);
+                    const userAnswerString = serialiseResponseValue(userAnswer);
                     const testSuitesResults = event.detail.results;
-                    const testSuitesResultsString = JSON.stringify(testSuitesResults);
+                    const testSuitesResultsString = serialiseResponseValue(testSuitesResults);
 
                     //console.log(userAnswer);
                     //console.log(testSuitesResults);
 
                     // Update the input value here
-                    $('input#answer').attr('value', userAnswerString);
-                    $('input#test-results').attr('value', testSuitesResultsString);
+                    $('input#answer').val(userAnswerString);
+                    $('input#test-results').val(testSuitesResultsString);
                 } catch (err) {
                     throw new Error(err);
                 }
