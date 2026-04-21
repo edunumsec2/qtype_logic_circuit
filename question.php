@@ -150,58 +150,54 @@ class qtype_logiccircuit_question extends question_graded_automatically {
     }
 
     private function analyse_response(string $testResults) {
-        $totalTests = 0;
-        $successfullTests = 0;
+        $testresultsarray = $this->decode_response_json($testResults);
+        $testcaseresults = $this->extract_test_case_results($testresultsarray);
 
-        $testResultsArray = $this->decode_response_json($testResults);
-        if (!is_array($testResultsArray) || empty($testResultsArray) || !isset($testResultsArray[0])) {
+        if (empty($testcaseresults)) {
             return array(
                 'fraction' => 0,
                 'test_summary' => []
             );
         }
 
-        $firstOfResultsArray = $testResultsArray[0];
-        if (!is_array($firstOfResultsArray) || !isset($firstOfResultsArray['testCaseResults'])) {
-            return array(
-                'fraction' => 0,
-                'test_summary' => []
-            );
-        }
+        $totaltests = 0;
+        $successfulltests = 0;
+        $testsummaryarray = array();
 
-        $testCaseResults = $firstOfResultsArray['testCaseResults'];
-
-        if($testCaseResults && is_array($testCaseResults)) {
-            $testSummaryArray = array();
-
-            foreach ($testCaseResults as $testCaseResult) {
-                $totalTests += 1;
-
-                $testCaseDescription = $testCaseResult[0];
-                $testName = $testCaseDescription['name'];
-
-                $testResult = $testCaseResult[1];
-                $testTag = $testResult['_tag'];
-
-                $testSummaryArray[$testName] = $testTag;
-
-                if ($testTag == 'pass') {
-                    $successfullTests += 1;
-                }
+        foreach ($testcaseresults as $index => $testcaseresult) {
+            if (!is_array($testcaseresult) || !isset($testcaseresult[0], $testcaseresult[1])) {
+                continue;
             }
 
-            $fraction = round($successfullTests / $totalTests, 2);
+            $testcasedescription = $testcaseresult[0];
+            $testresult = $testcaseresult[1];
 
-            return array(
-                'fraction' => $fraction,
-                'test_summary' => $testSummaryArray
-            );
-        } else {
+            if (!is_array($testcasedescription) || !is_array($testresult) || !isset($testresult['_tag'])) {
+                continue;
+            }
+
+            $testname = $testcasedescription['name'] ?? "test_$index";
+            $testtag = $testresult['_tag'];
+
+            $totaltests += 1;
+            $testsummaryarray[$testname] = $testtag;
+
+            if ($testtag === 'pass') {
+                $successfulltests += 1;
+            }
+        }
+
+        if ($totaltests === 0) {
             return array(
                 'fraction' => 0,
                 'test_summary' => []
             );
         }
+
+        return array(
+            'fraction' => round($successfulltests / $totaltests, 2),
+            'test_summary' => $testsummaryarray
+        );
     }
 
     private function notEmptyResponse(array $response) {
@@ -260,14 +256,22 @@ class qtype_logiccircuit_question extends question_graded_automatically {
     }
 
     private function is_valid_test_results_payload($testresults): bool {
+        return !empty($this->extract_test_case_results($testresults));
+    }
+
+    private function extract_test_case_results($testresults): array {
         if (!is_array($testresults) || empty($testresults)) {
-            return false;
+            return array();
         }
 
         if (isset($testresults['testCaseResults']) && is_array($testresults['testCaseResults'])) {
-            return true;
+            return $testresults['testCaseResults'];
         }
 
-        return isset($testresults[0]['testCaseResults']) && is_array($testresults[0]['testCaseResults']);
+        if (isset($testresults[0]['testCaseResults']) && is_array($testresults[0]['testCaseResults'])) {
+            return $testresults[0]['testCaseResults'];
+        }
+
+        return array();
     }
 }

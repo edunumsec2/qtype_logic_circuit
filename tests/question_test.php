@@ -67,6 +67,18 @@ final class question_test extends \advanced_testcase {
 		);
 	}
 
+	public function test_grading_returns_zero_for_malformed_test_results(): void {
+		$question = \test_question_maker::make_question('logiccircuit', 'test');
+
+		$this->assertEquals(
+			array(0, question_state::$gradedwrong),
+			$question->grade_response(array(
+				'answer' => $this->jsonAnswerString,
+				'test_results' => '{"testSuite": {}}',
+			))
+		);
+	}
+
 	public function test_is_same_response_handles_scalar_json_answers(): void {
 		$question = \test_question_maker::make_question('logiccircuit', 'test');
 
@@ -109,6 +121,15 @@ final class question_test extends \advanced_testcase {
 				'test_results' => json_encode($this->correctTestResults),
 			))
 		);
+	}
+
+	public function test_summarise_response_ignores_malformed_test_cases(): void {
+		$question = \test_question_maker::make_question('logiccircuit', 'test');
+
+		$this->assertSame('', $question->summarise_response(array(
+			'answer' => $this->jsonAnswerString,
+			'test_results' => '{"testCaseResults":[["broken"]]}',
+		)));
 	}
 
 	public function test_get_question_summary(): void {
