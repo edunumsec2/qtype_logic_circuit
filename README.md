@@ -33,7 +33,7 @@ This plugin allows for the creation of logic circuit questions in Moodle quizzes
 
 1. Log into the already running Moodle instance as administrator.
 2. Navigate to `Site administration -> Plugins -> Install plugins`
-3. Drop the contents of thie repo in a zip file and click `Install plugin from the ZIP file`
+3. Drop the contents of this repo in a zip file and click `Install plugin from the ZIP file`
 
 **In Development Mode**
 
