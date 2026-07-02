@@ -40,12 +40,32 @@ class qtype_logiccircuit_question extends question_graded_automatically {
         debugging("Summarising responses...", DEBUG_DEVELOPER);
         debugging(print_r($response, true), DEBUG_DEVELOPER);
 
-        if (!isset($response['test_results']) || trim($response['test_results']) === '') {
+        $hasanswer = isset($response['answer']) && trim($response['answer']) !== '';
+        $hastestresults = isset($response['test_results']) && trim($response['test_results']) !== '';
+
+        if (!$hasanswer && !$hastestresults) {
             return null;
         }
 
-        $responseanalysis = $this->get_response_analysis($response['test_results']);
+        $result = '';
+
+        if ($hastestresults) {
+            $result .= "# Tests: \n";
+            $result .= $this->get_response_analysis_string($response['test_results']) . "\n";
+        }
+
+        if ($hasanswer) {
+            $result .= "# Circuit: \n";
+            $result .= trim($response['answer']) . "\n";
+        }
+
+        return rtrim($result);
+    }
+
+    public function get_response_analysis_string(string $test_results): string {
+        $responseanalysis = $this->analyse_response($test_results);
         $testsummary = $responseanalysis['test_summary'];
+
         if (empty($testsummary)) {
             return '';
         }
@@ -53,7 +73,7 @@ class qtype_logiccircuit_question extends question_graded_automatically {
         $result = '';
 
         foreach ($testsummary as $testname => $testresult) {
-            $result .= "Test $testname : $testresult\n";
+            $result .= "Test $testname: $testresult\n";
         }
 
         return rtrim($result);
@@ -100,9 +120,9 @@ class qtype_logiccircuit_question extends question_graded_automatically {
     }
 
     public function is_same_response(array $prevresponse, array $newresponse) {
-        if(!$this->notEmptyResponse($prevresponse) && !$this->notEmptyResponse($newresponse)) {
+        if(!$this->not_empty_response($prevresponse) && !$this->not_empty_response($newresponse)) {
             return true;
-        } else if(!$this->notEmptyResponse($prevresponse)) {
+        } else if(!$this->not_empty_response($prevresponse)) {
             return false;
         } else {
             try {
@@ -128,7 +148,7 @@ class qtype_logiccircuit_question extends question_graded_automatically {
         if (!isset($response['test_results']) || trim($response['test_results']) === '') {
             $fraction = 0;
         } else {
-            $responseanalysis = $this->get_response_analysis($response['test_results']);
+            $responseanalysis = $this->analyse_response($response['test_results']);
             $fraction = $responseanalysis['fraction'];
         }
 
@@ -159,7 +179,7 @@ class qtype_logiccircuit_question extends question_graded_automatically {
         return null;
     }
 
-    private function analyse_response(string $testResults) {
+    private function analyse_response_internal(string $testResults): array {
         $testresultsarray = $this->decode_response_json($testResults);
         $testcaseresults = $this->extract_test_case_results($testresultsarray);
 
@@ -210,7 +230,7 @@ class qtype_logiccircuit_question extends question_graded_automatically {
         );
     }
 
-    private function notEmptyResponse(array $response) {
+    private function not_empty_response(array $response) {
         return (isset($response['answer']) && !empty($response['answer'])) &&
             (isset($response['test_results']) && !empty($response['test_results']));
     }
@@ -261,9 +281,9 @@ class qtype_logiccircuit_question extends question_graded_automatically {
         return is_array($nesteddecoded) ? $nesteddecoded : $decoded;
     }
 
-    private function get_response_analysis(string $testresults): array {
+    public function analyse_response(string $testResults): array {
         try {
-            return $this->analyse_response($testresults);
+            return $this->analyse_response_internal($testResults);
         } catch (TypeError | SyntaxError $error) {
             return array(
                 'fraction' => 0,

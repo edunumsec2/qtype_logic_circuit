@@ -38,6 +38,16 @@ class qtype_logiccircuit_renderer extends qtype_renderer {
             ? self::normalise_json_value_for_editor($response['test_results'])
             : '';
         $readonly = $options->readonly;
+        $readonly_answer_pre = '';
+
+        if ($readonly && $answer_value !== '') {
+            $readonly_answer_pre = self::render_as_pre($answer_value);
+        }
+
+        $readonly_test_results = '';
+        if ($readonly && $test_results_value !== '') {
+            $readonly_test_results = $question->get_response_analysis_string($test_results_value);
+        }
 
         if (debugging('', DEBUG_DEVELOPER)) {
             $is_debug = true;
@@ -45,8 +55,12 @@ class qtype_logiccircuit_renderer extends qtype_renderer {
             $is_debug = false;
         }
 
-        $PAGE->requires->js(new url('https://logic.modulo-info.ch/simulator/lib/bundle.js'));
-        $PAGE->requires->js_call_amd('qtype_logiccircuit/save-result', 'init');
+        static $assets_included = false;
+        if (!$assets_included) {
+            $PAGE->requires->js(new url('https://logic.modulo-info.ch/simulator/lib/bundle.js'));
+            $PAGE->requires->js_call_amd('qtype_logiccircuit/save-result', 'init');
+            $assets_included = true;
+        }
 
 
         $template_data = [
@@ -59,6 +73,8 @@ class qtype_logiccircuit_renderer extends qtype_renderer {
             'test_results_input_name' => $test_results_input_name,
             'answer_value' => $answer_value,
             'test_results_value' => $test_results_value,
+            'readonly_answer_pre' => $readonly_answer_pre,
+            'readonly_test_results' => $readonly_test_results,
             'readonly' => $readonly,
             'is_debug' => $is_debug
         ];
@@ -88,5 +104,9 @@ class qtype_logiccircuit_renderer extends qtype_renderer {
         }
 
         return is_array($nesteddecoded) ? trim($decoded) : $value;
+    }
+
+    private static function render_as_pre(string $answervalue): string {
+        return html_writer::tag('pre', s($answervalue), ['class' => 'qtype-logiccircuit-answer-json5']);
     }
 }

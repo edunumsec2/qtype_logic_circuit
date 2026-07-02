@@ -47,6 +47,8 @@ This is described for local development on macOS.
  3. Go to http://localhost:8888/moodle/admin and click "Upgrade Moodle database now" to install/upgrade the plugin if necessary.
  4. Start Moodle on MAMP and navigate to http://localhost:8888/moodle to test the plugin. Default credentials are admin / 12345.
  5. If changes don't show up, try purging the Moodle caches by going to `Site administration -> Development -> Purge all caches`.
+ 6. If you change the JavaScript code, you may need to run `./build-amd.sh` in the plugin folder to rebuild the JavaScript files.
+ 7. To observe the DB, go to http://localhost:8888/phpMyAdmin/, then the `mdl_quiz_attempts`/`mdl_question_attempts`/`mdl_question` tables.
 
 
 ## Testing

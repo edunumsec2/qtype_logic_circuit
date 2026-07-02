@@ -11,12 +11,11 @@
 
 <div class="qtype_logiccircuit">
 
-    <h1>{{question_name}}</h1>
     <p>{{{question_text}}}</p>
 
     {{#readonly}}
         <div style="width: 100%; height: 40rem; max-height: 40rem;">
-            <logic-editor mode="static" norestore id="logic-editor">
+            <logic-editor mode="tryout" showdisconnectedpins norestore>
                 <script type="application/json5">
                     {{#answer_value}}
                         {{{answer_value}}}
@@ -28,12 +27,45 @@
                 </script>
             </logic-editor>
         </div>
+
+        <div class="d-flex ustify-content-start align-items-center">
+            <button
+                type="button"
+                class="btn btn-secondary mt-3 unlock-circuit-button"
+                aria-label="{{#str}} unlockcircuit, qtype_logiccircuit {{/str}}">
+                {{#str}} unlockcircuit, qtype_logiccircuit {{/str}}
+            </button>
+        </div>
+
+        {{#readonly_test_results}}
+            <details class="mt-3">
+                <summary class="fw-bold" style="cursor: pointer;">
+                    {{#str}} submittedtestresultsjson, qtype_logiccircuit {{/str}}
+                </summary>
+
+                <div class="mt-2" style="white-space: pre-line;">
+                    {{{readonly_test_results}}}
+                </div>
+            </details>
+        {{/readonly_test_results}}
+
+        {{#readonly_answer_pre}}
+            <details class="mt-3">
+                <summary class="fw-bold" style="cursor: pointer;">
+                    {{#str}} submittedcircuitjson, qtype_logiccircuit {{/str}}
+                </summary>
+
+                <div class="mt-2">
+                    {{{readonly_answer_pre}}}
+                </div>
+            </details>
+        {{/readonly_answer_pre}}
     {{/readonly}}
 
     {{^readonly}}
         <div style="width: 100%; height: 40rem; max-height: 40rem;">
             {{#editor_mode}}
-                <logic-editor norestore mode="connect" id="logic-editor">
+                <logic-editor norestore mode="connect">
                     <script type="application/json5">
                         {{#answer_value}}
                             {{{answer_value}}}
@@ -46,86 +78,63 @@
                 </logic-editor>
             {{/editor_mode}}
             {{^editor_mode}}
-                {{#components_to_show}}
-                    <logic-editor norestore mode="design" showonly="{{components_to_show}}" id="logic-editor">
-                        <script type="application/json5">
-                            {{#answer_value}}
-                                {{{answer_value}}}
-                            {{/answer_value}}
+                <logic-editor norestore mode="design" showonly="{{components_to_show}}">
+                    <script type="application/json5">
+                        {{#answer_value}}
+                            {{{answer_value}}}
+                        {{/answer_value}}
 
-                            {{^answer_value}}
-                                {{{init_state}}}
-                            {{/answer_value}}
-                        </script>
-                    </logic-editor>
-                {{/components_to_show}}
-                {{^components_to_show}}
-                    <logic-editor norestore mode="design" id="logic-editor">
-                        <script type="application/json5">
-                            {{#answer_value}}
-                                {{{answer_value}}}
-                            {{/answer_value}}
-
-                            {{^answer_value}}
-                                {{{init_state}}}
-                            {{/answer_value}}
-                        </script>
-                    </logic-editor>
-                {{/components_to_show}}
+                        {{^answer_value}}
+                            {{{init_state}}}
+                        {{/answer_value}}
+                    </script>
+                </logic-editor>
             {{/editor_mode}}
         </div>
 
-        <div class="d-flex justify-content-between">
+        <div class="d-flex justify-content-between" style="margin: 1rem 0 0.5rem;">
             <div class="d-flex ustify-content-start align-items-center">
                 <button
-                    id="circuit-run-test-button"
                     type="button"
-                    class="btn btn-primary"
-                    aria-label="{{#str}} runtests, qtype_logiccircuit {{/str}}"
-                    style="margin: 1rem">
+                    class="btn btn-info circuit-run-test-button"
+                    aria-label="{{#str}} runtests, qtype_logiccircuit {{/str}}">
                     {{#str}} saveandruntests, qtype_logiccircuit {{/str}}
                 </button>
                 <span
-                    id="result_not_uploaded"
-                    class="text-warning"
-                    style="margin-left: 1rem;"
+                    class="text-warning result_not_uploaded"
+                    style="margin-left: 1rem; display: none;"
                     role="status">
                     <i class="fa fa-warning" aria-hidden="true"></i>
                     {{#str}} resultnotuploaded, qtype_logiccircuit {{/str}}
                 </span>
                 <span
-                    id="new_result_uploaded"
-                    class="text-success"
-                    style="margin-left: 1rem;"
+                    class="text-info new_result_uploaded"
+                    style="margin-left: 1rem; display: none;"
                     role="status">
-                    <i class="fa fa-circle-check" aria-hidden="true"></i>
+                    <i class="fa fa-cloud-upload" aria-hidden="true"></i>
                     {{#str}} resultuploaded, qtype_logiccircuit {{/str}}
                 </span>
             </div>
 
             <button
-                id="circuit-reset-button"
                 type="button"
-                class="btn btn-warning"
-                aria-label="{{#str}} resetcircuit, qtype_logiccircuit {{/str}}"
-                style="margin: 1rem"
+                class="btn btn-warning circuit-reset-button"
+                aria-label="{{#str}} resetthecircuit, qtype_logiccircuit {{/str}}"
                 data-init-state="{{init_state}}">
                 {{#str}} resetthecircuit, qtype_logiccircuit {{/str}}
             </button>
         </div>
 
-        <input
-            type="text"
+        <textarea
             name="{{answer_input_name}}"
-            id="answer"
-            value="{{answer_value}}"
-            style="display: none;">
-        <input
-            type="text"
+            class="answer"
+            style="display: none;">{{answer_value}}
+        </textarea>
+        <textarea
             name="{{test_results_input_name}}"
-            id="test-results"
-            value="{{test_results_value}}"
-            style="display: none;">
+            class="test-results"
+            style="display: none;">{{test_results_value}}
+        </textarea>
     {{/readonly}}
 
 

@@ -5,8 +5,8 @@
  * @copyright  2025 Groupe Modulo
  * @license    CC BY-NC-SA
  */
-define(['jquery'], function($) {
-    const serialiseResponseValue = function(value) {
+define([], function () {
+    const serialiseResponseValue = function (value) {
         if (typeof value === 'string') {
             return value;
         }
@@ -15,75 +15,149 @@ define(['jquery'], function($) {
     };
 
     return {
-        init: function() {
-            // Remove this as soon as the autosave to session storage is deactivated in the logic circuit editor
-            sessionStorage.removeItem('logic/logic-editor');
+        init: function () {
+            // console.log("initialising save-result.js");
 
-            const nextNavButton = $('input[type="submit"]#mod_quiz-next-nav.btn');
-            const resultNotUploadedIcon = $('span#result_not_uploaded');
-            const newResultUploadedIcon = $('span#new_result_uploaded');
+            const showElements = (elements) => {
+                for (const [name, element] of Object.entries(elements)) {
+                    // console.log(`Element ${name}: `, element);
+                }
+            };
+            
+            const nextNavButton = document.querySelector('input[type="submit"]#mod_quiz-next-nav.btn');
+            const parentDivs = document.querySelectorAll('.que.logiccircuit');
+            const numParentDivs = parentDivs.length;
 
-            const testResultsInput = $('input#test-results');
-            const testResults = testResultsInput.val();
+            const submittedByEditor = new Map();
+            const updateNavButtonWithSubmittedState = (logicEditor, submittedState) => {
+                if (nextNavButton) {
+                    submittedByEditor.set(logicEditor, submittedState);
+                    let totalSubmitted = 0;
+                    for (const state of submittedByEditor.values()) {
+                        if (state) totalSubmitted++;
+                    }
+                    // console.log(`Total submitted: ${totalSubmitted} / ${numParentDivs}`);
+                    const allSubmitted = totalSubmitted === numParentDivs;
+                    if (allSubmitted) {
+                        nextNavButton.removeAttribute('disabled');
+                    } else {
+                        nextNavButton.setAttribute('disabled', 'true');
+                    }
+                }
+            };
 
-            //console.log(testResults);
+            parentDivs.forEach((parentDiv) => {
+                // console.log("Configuting logic circuit editor: ", parentDiv);
 
-            // Block quiz progression until the user submits a result
-            if(testResults === undefined || testResults.length === 0) {
-                nextNavButton.prop('disabled', true);
-                resultNotUploadedIcon.css('display', 'block');
-                newResultUploadedIcon.css('display', 'none');
-            } else {
-                nextNavButton.prop('disabled', false);
-                resultNotUploadedIcon.css('display', 'none');
-                newResultUploadedIcon.css('display', 'block');
-            }
-
-            const runTestButton = $('button#circuit-run-test-button');
-
-            runTestButton.on('click', () => {
-                const logicEditor = $('logic-editor#logic-editor')[0];
-                logicEditor.runAllCircuitTestSuites();
-            });
-
-            const resetButton = $('button#circuit-reset-button');
-
-            resetButton.on('click', () => {
-                const initState = resetButton.data('init-state');
-                const logicEditor = $('logic-editor#logic-editor')[0];
-
-                logicEditor.loadCircuitOrLibrary(initState);
-            });
-
-            const logicEditor = $('logic-editor#logic-editor')[0];
-
-            logicEditor.addEventListener('testsinvalidated', () => {
-                nextNavButton.prop('disabled', true);
-                resultNotUploadedIcon.css('display', 'block');
-                newResultUploadedIcon.css('display', 'none');
-            });
-
-            logicEditor.addEventListener('testsexecuted', (event) => {
-                try {
-                    const userAnswer = event.detail.circuit;
-                    const userAnswerString = serialiseResponseValue(userAnswer);
-                    const testSuitesResults = event.detail.results;
-                    const testSuitesResultsString = serialiseResponseValue(testSuitesResults);
-
-                    //console.log(userAnswer);
-                    //console.log(testSuitesResults);
-
-                    // Update the input value here
-                    $('input#answer').val(userAnswerString);
-                    $('input#test-results').val(testSuitesResultsString);
-                } catch (err) {
-                    throw new Error(err);
+                /** @type {any} */
+                const logicEditor = parentDiv.querySelector('logic-editor');
+                if (!logicEditor) {
+                    console.error("Logic editor not found in parent div: ", parentDiv);
+                    return;
                 }
 
-                nextNavButton.prop('disabled', false);
-                resultNotUploadedIcon.css('display', 'none');
-                newResultUploadedIcon.css('display', 'block');
+                const flagImage = parentDiv.querySelector('img.questionflagimage');
+                const flagLink = flagImage?.closest('a');
+
+                const isFlaggedInHTML = () => flagLink?.getAttribute('aria-pressed') === 'true';
+                let flaggedByEditor = false;
+
+                // This sets/clears the flag depending on the submitted state. If the user has flagged the question themselves, we don't want to unflag it.
+                const manageFlaggedState = (flagged) => {
+                    if (flagged) {
+                        if (!isFlaggedInHTML()) {
+                            flagLink?.click();
+                            flaggedByEditor = true;
+                        }
+                    } else {
+                        if (isFlaggedInHTML() && flaggedByEditor) {
+                            flagLink?.click();
+                            flaggedByEditor = false;
+                        }
+                    }
+                }
+
+                /** @type {HTMLElement} */
+                const resultNotUploadedIcon = parentDiv.querySelector('.result_not_uploaded');
+                /** @type {HTMLElement} */
+                const newResultUploadedIcon = parentDiv.querySelector('.new_result_uploaded');
+
+                /** @type {HTMLTextAreaElement} */
+                const answerField = parentDiv.querySelector('.answer');
+
+                /** @type {HTMLTextAreaElement} */
+                const testResultsField = parentDiv.querySelector('.test-results');
+
+
+                /** @type {function(boolean):void} */
+                const setSubmittedState = (isSubmitted) => {
+                    updateNavButtonWithSubmittedState(logicEditor, isSubmitted);
+                    manageFlaggedState(!isSubmitted);
+                    if (!isSubmitted) {
+                        if (resultNotUploadedIcon) resultNotUploadedIcon.style.display = 'block';
+                        if (newResultUploadedIcon) newResultUploadedIcon.style.display = 'none';
+                    } else {
+                        if (resultNotUploadedIcon) resultNotUploadedIcon.style.display = 'none';
+                        if (newResultUploadedIcon) newResultUploadedIcon.style.display = 'block';
+                    }
+                };
+
+                logicEditor.addEventListener('testsinvalidated', () => setSubmittedState(false));
+
+                logicEditor.addEventListener('testsexecuted', (event) => {
+                    if (answerField && testResultsField) {
+                        try {
+                            const userAnswer = event.detail.circuit;
+                            const userAnswerString = serialiseResponseValue(userAnswer);
+                            const testSuitesResults = event.detail.results;
+                            const testSuitesResultsString = serialiseResponseValue(testSuitesResults);
+
+                            // Update the input value here
+                            answerField.value = userAnswerString;
+                            testResultsField.value = testSuitesResultsString;
+                        } catch (err) {
+                            throw new Error(err);
+                        }
+                    }
+
+                    setSubmittedState(true);
+                });
+
+                const testResults = (!testResultsField) ? "" : testResultsField.value;
+                //console.log(testResults);
+                const submitted = testResults !== undefined && testResults.trim().length > 0;
+                setSubmittedState(submitted);
+
+                const unlockCircuitButton = parentDiv.querySelector('.unlock-circuit-button');
+                if (unlockCircuitButton) {
+                    unlockCircuitButton.addEventListener('click', (evt) => {
+                        logicEditor.setMode("full", false, true);
+                        unlockCircuitButton.setAttribute('disabled', 'true');
+                    });
+                }
+
+                const runTestButton = parentDiv.querySelector('.circuit-run-test-button');
+                if (runTestButton) {
+                    runTestButton.addEventListener('click', (evt) => {
+                        logicEditor.runAllCircuitTestSuites();
+                    });
+                }
+
+
+                /** @type {HTMLElement} */
+                const resetButton = parentDiv.querySelector('.circuit-reset-button');
+                if (resetButton) {
+                    resetButton.addEventListener('click', () => {
+                        const initState = resetButton.dataset.initState;
+                        logicEditor.loadCircuitOrLibrary(initState);
+                    });
+                }
+
+
+                showElements({ nextNavButton, flagLink, logicEditor, resultNotUploadedIcon, newResultUploadedIcon, testResultsField, answerField, unlockCircuitButton, runTestButton, resetButton });
+
             });
+
         }
     };
 });
