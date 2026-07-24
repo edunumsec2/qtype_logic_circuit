@@ -187,23 +187,29 @@ final class question_test extends \advanced_testcase {
 	public function test_summarise_response_ignores_malformed_test_cases(): void {
 		$question = \test_question_maker::make_question('logiccircuit', 'test');
 
-		$this->assertSame('', $question->summarise_response(array(
+		$summary = $question->summarise_response(array(
 			'answer' => $this->jsonAnswerString,
 			'test_results' => '{"testCaseResults":[["broken"]]}',
-		)));
+		));
+
+		$this->assertStringContainsString("# Tests: \n\n# Circuit:", $summary);
+		$this->assertStringNotContainsString('Test broken', $summary);
 	}
 
-	public function test_summarise_response_returns_null_when_test_results_are_missing(): void {
+	public function test_summarise_response_includes_circuit_when_test_results_are_missing(): void {
 		$question = \test_question_maker::make_question('logiccircuit', 'test');
 
-		$this->assertNull($question->summarise_response(array('answer' => $this->jsonAnswerString)));
+		$summary = $question->summarise_response(array('answer' => $this->jsonAnswerString));
+
+		$this->assertStringStartsWith("# Circuit: \n", $summary);
+		$this->assertStringContainsString(trim($this->jsonAnswerString), $summary);
 	}
 
 	public function test_summarise_response_lists_test_results(): void {
 		$question = \test_question_maker::make_question('logiccircuit', 'test');
 
 		$this->assertStringContainsString(
-			'Test 0 0 → 1 0 0 0 : pass',
+			'Test 0 0 → 1 0 0 0: pass',
 			$question->summarise_response(array(
 				'answer' => $this->jsonAnswerString,
 				'test_results' => $this->correctTestResults,
