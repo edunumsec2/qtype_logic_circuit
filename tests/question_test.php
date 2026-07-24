@@ -67,6 +67,58 @@ final class question_test extends \advanced_testcase {
 		);
 	}
 
+	public function test_grading_uses_progressive_penalty_regime(): void {
+		$question = \test_question_maker::make_question('logiccircuit', 'test');
+		$question->penaltyregime = '10, 20, ...';
+
+		$this->assertEquals(
+			array(0.9, question_state::$gradedpartial),
+			$question->grade_response(array(
+				'answer' => $this->jsonAnswerString,
+				'test_results' => $this->test_results_with_failed_tests(1),
+			))
+		);
+
+		$this->assertEquals(
+			array(0.8, question_state::$gradedpartial),
+			$question->grade_response(array(
+				'answer' => $this->jsonAnswerString,
+				'test_results' => $this->test_results_with_failed_tests(2),
+			))
+		);
+
+		$this->assertEquals(
+			array(0.6, question_state::$gradedpartial),
+			$question->grade_response(array(
+				'answer' => $this->jsonAnswerString,
+				'test_results' => $this->test_results_with_failed_tests(4),
+			))
+		);
+	}
+
+	public function test_grading_reuses_last_finite_penalty(): void {
+		$question = \test_question_maker::make_question('logiccircuit', 'test');
+		$question->penaltyregime = '10, 25';
+
+		$this->assertEquals(
+			array(0.75, question_state::$gradedpartial),
+			$question->grade_response(array(
+				'answer' => $this->jsonAnswerString,
+				'test_results' => $this->test_results_with_failed_tests(3),
+			))
+		);
+	}
+
+	public function test_grading_falls_back_to_linear_for_malformed_penalty_regime(): void {
+		$question = \test_question_maker::make_question('logiccircuit', 'test');
+		$question->penaltyregime = '10, ...';
+
+		$this->assertEquals(
+			array(0.92, question_state::$gradedpartial),
+			$question->grade_response(array('answer' => $this->jsonAnswerString, 'test_results' => $this->semiCorrectTestResults))
+		);
+	}
+
 	public function test_grading_returns_zero_for_malformed_test_results(): void {
 		$question = \test_question_maker::make_question('logiccircuit', 'test');
 
@@ -163,6 +215,15 @@ final class question_test extends \advanced_testcase {
 		$question = \test_question_maker::make_question('logiccircuit', 'test');
 		$qsummary = $question->get_question_summary();
 		$this->assertEquals($question->questiontext, $qsummary);
+	}
+
+	private function test_results_with_failed_tests(int $failedtests): string {
+		$testresults = json_decode($this->correctTestResults, true);
+		foreach ($testresults['testCaseResults'] as $index => $testcaseresult) {
+			$testresults['testCaseResults'][$index][1]['_tag'] = $index < $failedtests ? 'fail' : 'pass';
+		}
+
+		return json_encode($testresults);
 	}
 
 	/*

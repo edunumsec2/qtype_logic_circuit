@@ -23,6 +23,7 @@ class qtype_logiccircuit_question extends question_graded_automatically {
     public $initialstate;
     public $editormode;
     public $componentstoshow;
+    public $penaltyregime;
 
     public function get_expected_data() {
         debugging("Getting expected data...", DEBUG_DEVELOPER);
@@ -149,7 +150,7 @@ class qtype_logiccircuit_question extends question_graded_automatically {
             $fraction = 0;
         } else {
             $responseanalysis = $this->analyse_response($response['test_results']);
-            $fraction = $responseanalysis['fraction'];
+            $fraction = $this->apply_penalty_regime($responseanalysis);
         }
 
         return array($fraction, question_state::graded_state_for_fraction($fraction));
@@ -186,12 +187,16 @@ class qtype_logiccircuit_question extends question_graded_automatically {
         if (empty($testcaseresults)) {
             return array(
                 'fraction' => 0,
-                'test_summary' => []
+                'test_summary' => [],
+                'total_tests' => 0,
+                'successful_tests' => 0,
+                'failed_tests' => 0
             );
         }
 
         $totaltests = 0;
         $successfulltests = 0;
+        $failedtests = 0;
         $testsummaryarray = array();
 
         foreach ($testcaseresults as $index => $testcaseresult) {
@@ -214,20 +219,98 @@ class qtype_logiccircuit_question extends question_graded_automatically {
 
             if ($testtag === 'pass') {
                 $successfulltests += 1;
+            } else {
+                $failedtests += 1;
             }
         }
 
         if ($totaltests === 0) {
             return array(
                 'fraction' => 0,
-                'test_summary' => []
+                'test_summary' => [],
+                'total_tests' => 0,
+                'successful_tests' => 0,
+                'failed_tests' => 0
             );
         }
 
         return array(
             'fraction' => round($successfulltests / $totaltests, 2),
-            'test_summary' => $testsummaryarray
+            'test_summary' => $testsummaryarray,
+            'total_tests' => $totaltests,
+            'successful_tests' => $successfulltests,
+            'failed_tests' => $failedtests
         );
+    }
+
+    private function apply_penalty_regime(array $responseanalysis): float {
+        $fallbackfraction = $responseanalysis['fraction'];
+        $penaltyregime = trim($this->penaltyregime ?? '');
+
+        if ($penaltyregime === '' || empty($responseanalysis['total_tests'])) {
+            return $fallbackfraction;
+        }
+
+        $failedtests = $responseanalysis['failed_tests'] ?? 0;
+        if ($failedtests === 0) {
+            return 1.0;
+        }
+
+        $penalties = $this->parse_penalty_regime($penaltyregime);
+        if ($penalties === null) {
+            return $fallbackfraction;
+        }
+
+        $index = min(count($penalties) - 1, $failedtests - 1);
+        $penalty = $penalties[$index] / 100.0;
+
+        return round(max(0, min(1, 1 - $penalty)), 2);
+    }
+
+    private function parse_penalty_regime(string $penaltyregime): ?array {
+        $parts = array_map('trim', explode(',', str_replace('%', '', trim($penaltyregime))));
+
+        if (empty($parts) || in_array('', $parts, true)) {
+            return null;
+        }
+
+        $hasellipsis = end($parts) === '...';
+        if (in_array('...', array_slice($parts, 0, -1), true)) {
+            return null;
+        }
+
+        $numericparts = $hasellipsis ? array_slice($parts, 0, -1) : $parts;
+        $penalties = array();
+        foreach ($numericparts as $part) {
+            if (!is_numeric($part)) {
+                return null;
+            }
+
+            $penalty = (float)$part;
+            if ($penalty < 0) {
+                return null;
+            }
+
+            $penalties[] = $penalty;
+        }
+
+        if (empty($penalties)) {
+            return null;
+        }
+
+        if ($hasellipsis) {
+            $count = count($penalties);
+            if ($count < 2 || $penalties[$count - 1] <= $penalties[$count - 2]) {
+                return null;
+            }
+
+            $delta = $penalties[$count - 1] - $penalties[$count - 2];
+            while ($penalties[count($penalties) - 1] < 100) {
+                $penalties[] = min(100, $penalties[count($penalties) - 1] + $delta);
+            }
+        }
+
+        return $penalties;
     }
 
     private function not_empty_response(array $response) {
@@ -287,7 +370,10 @@ class qtype_logiccircuit_question extends question_graded_automatically {
         } catch (TypeError | SyntaxError $error) {
             return array(
                 'fraction' => 0,
-                'test_summary' => []
+                'test_summary' => [],
+                'total_tests' => 0,
+                'successful_tests' => 0,
+                'failed_tests' => 0
             );
         }
     }

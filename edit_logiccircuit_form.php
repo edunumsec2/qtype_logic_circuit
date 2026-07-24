@@ -133,6 +133,15 @@ class qtype_logiccircuit_edit_form extends question_edit_form {
         $mform->addHelpButton('componentstoshow', 'componentstoshow_text_field', 'qtype_logiccircuit');
         $mform->setType('componentstoshow', PARAM_TEXT);
 
+        $mform->addElement(
+            'text',
+            'penaltyregime',
+            get_string('penaltyregime_label', 'qtype_logiccircuit')
+        );
+        $mform->setDefault('penaltyregime', '');
+        $mform->addHelpButton('penaltyregime', 'penaltyregime', 'qtype_logiccircuit');
+        $mform->setType('penaltyregime', PARAM_TEXT);
+
         $mform->addElement('html', '<div class="mb-3 row fitem"><div class="col-md-3 col-form-label d-flex pb-0 pe-md-0"></div><div class="col-md-9 d-flex flex-wrap align-items-start felement"><div id="qtype-logiccircuit-component-picker" class="qtype-logiccircuit-component-picker" hidden></div></div></div>');
     }
 
@@ -150,7 +159,43 @@ class qtype_logiccircuit_edit_form extends question_edit_form {
             $errors['initialstate'] = get_string('not_valid_json', 'qtype_logiccircuit');
         }
 
+        if (!empty($data['penaltyregime'])) {
+            $penaltyregimeerror = $this->validate_penalty_regime($data['penaltyregime']);
+            if ($penaltyregimeerror !== '') {
+                $errors['penaltyregime'] = $penaltyregimeerror;
+            }
+        }
+
         return $errors;
+    }
+
+    private function validate_penalty_regime(string $penaltyregime): string {
+        $parts = array_map('trim', explode(',', str_replace('%', '', trim($penaltyregime))));
+
+        if (empty($parts) || in_array('', $parts, true)) {
+            return get_string('penaltyregime_invalid', 'qtype_logiccircuit');
+        }
+
+        $hasellipsis = end($parts) === '...';
+        if (in_array('...', array_slice($parts, 0, -1), true)) {
+            return get_string('penaltyregime_invalid', 'qtype_logiccircuit');
+        }
+
+        $numericparts = $hasellipsis ? array_slice($parts, 0, -1) : $parts;
+        foreach ($numericparts as $part) {
+            if (!is_numeric($part) || (float)$part < 0) {
+                return get_string('penaltyregime_invalid', 'qtype_logiccircuit');
+            }
+        }
+
+        if ($hasellipsis) {
+            $count = count($numericparts);
+            if ($count < 2 || (float)$numericparts[$count - 1] <= (float)$numericparts[$count - 2]) {
+                return get_string('penaltyregime_invalidellipsis', 'qtype_logiccircuit');
+            }
+        }
+
+        return '';
     }
 
     public function qtype() {

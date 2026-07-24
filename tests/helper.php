@@ -37,6 +37,7 @@ class qtype_logiccircuit_test_helper extends question_test_helper {
         $q->qtype = question_bank::get_qtype('logiccircuit');
 
         $q->initialstate = file_get_contents($CFG->dirroot . '/question/type/logiccircuit/tests/fixtures/2bit-decoder.json');
+        $q->penaltyregime = '';
 
         return $q;
     }
@@ -56,6 +57,7 @@ class qtype_logiccircuit_test_helper extends question_test_helper {
         $form->generalfeedback['text'] = 'You had to construct a 2-bit decoder.';
 
         $form->initialstate = file_get_contents($CFG->dirroot . '/question/type/logiccircuit/tests/fixtures/2bit-decoder.json');
+        $form->penaltyregime = '';
 
         $form->status = \core_question\local\bank\question_version_status::QUESTION_STATUS_READY;
 
@@ -78,6 +80,7 @@ class qtype_logiccircuit_test_helper extends question_test_helper {
         $q->modifiedby = '2';
         $q->options = new stdClass();
         $q->options->initialstate = file_get_contents($CFG->dirroot . '/question/type/logiccircuit/tests/fixtures/2bit-decoder.json');
+        $q->options->penaltyregime = '';
 
         return $q;
     }

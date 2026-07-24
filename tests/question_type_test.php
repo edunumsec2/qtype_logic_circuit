@@ -88,6 +88,7 @@ final class question_type_test extends \advanced_testcase {
         // Options.
 		$jsonAnswerString = file_get_contents($CFG->dirroot . '/question/type/logiccircuit/tests/fixtures/2bit-decoder.json');
         $this->assertEquals($jsonAnswerString, $questiondata->options->initialstate);
+        $this->assertEquals('', $questiondata->options->penaltyregime);
 
         // Hints.
         $this->assertEquals([], $questiondata->hints);
@@ -123,6 +124,25 @@ final class question_type_test extends \advanced_testcase {
         }
 
         $this->assertEquals($questiondata->options->initialstate, $actualquestiondata->options->initialstate);
+        $this->assertEquals($questiondata->options->penaltyregime, $actualquestiondata->options->penaltyregime);
+    }
+
+    public function test_penalty_regime_validation_accepts_valid_values(): void {
+        $method = $this->get_penalty_regime_validation_method();
+        $form = (new \ReflectionClass(qtype_logiccircuit_edit_form::class))->newInstanceWithoutConstructor();
+
+        foreach (['10', '10%', '10, 20, ...'] as $penaltyregime) {
+            $this->assertSame('', $method->invoke($form, $penaltyregime));
+        }
+    }
+
+    public function test_penalty_regime_validation_rejects_invalid_values(): void {
+        $method = $this->get_penalty_regime_validation_method();
+        $form = (new \ReflectionClass(qtype_logiccircuit_edit_form::class))->newInstanceWithoutConstructor();
+
+        foreach (['...', '10, ...', '20, 10, ...', '10,,20', 'one'] as $penaltyregime) {
+            $this->assertNotSame('', $method->invoke($form, $penaltyregime));
+        }
     }
 
     public function test_renderer_normalises_double_encoded_answer_values(): void {
@@ -134,5 +154,12 @@ final class question_type_test extends \advanced_testcase {
             trim($jsonanswerstring),
             qtype_logiccircuit_renderer::normalise_json_value_for_editor(json_encode($jsonanswerstring))
         );
+    }
+
+    private function get_penalty_regime_validation_method(): \ReflectionMethod {
+        $method = new \ReflectionMethod(qtype_logiccircuit_edit_form::class, 'validate_penalty_regime');
+        $method->setAccessible(true);
+
+        return $method;
     }
 }
