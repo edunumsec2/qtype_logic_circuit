@@ -91,7 +91,7 @@ class qtype_logiccircuit_edit_form extends question_edit_form {
             'static',
             'initialstate_editor',
             get_string('initialstate', 'qtype_logiccircuit'),
-            '<div style="width: 100%; height: 600px"><logic-editor linkedto="[data-logicid=moodlefield]" mode="full" norestore></logic-editor></div>'
+            '<div style="width: 100%; height: 600px"><logic-editor linkedto="[data-logicid=moodlefield]" mode="full" outputdefault="?" usetags="key" showkeyinfo norestore></logic-editor></div>'
         );
 
         $mform->addElement(
@@ -126,21 +126,21 @@ class qtype_logiccircuit_edit_form extends question_edit_form {
 
         $mform->addElement(
             'text',
-            'componentstoshow',
-            get_string('componentstoshow_label', 'qtype_logiccircuit')
-        );
-        $mform->disabledIf('componentstoshow', 'editormode', 'eq', 1);
-        $mform->addHelpButton('componentstoshow', 'componentstoshow_text_field', 'qtype_logiccircuit');
-        $mform->setType('componentstoshow', PARAM_TEXT);
-
-        $mform->addElement(
-            'text',
             'penaltyregime',
             get_string('penaltyregime_label', 'qtype_logiccircuit')
         );
         $mform->setDefault('penaltyregime', '');
         $mform->addHelpButton('penaltyregime', 'penaltyregime', 'qtype_logiccircuit');
         $mform->setType('penaltyregime', PARAM_TEXT);
+
+        $mform->addElement(
+            'text',
+            'componentstoshow',
+            get_string('componentstoshow_label', 'qtype_logiccircuit')
+        );
+        $mform->disabledIf('componentstoshow', 'editormode', 'eq', 1);
+        $mform->addHelpButton('componentstoshow', 'componentstoshow_text_field', 'qtype_logiccircuit');
+        $mform->setType('componentstoshow', PARAM_TEXT);
 
         $mform->addElement('html', '<div class="mb-3 row fitem"><div class="col-md-3 col-form-label d-flex pb-0 pe-md-0"></div><div class="col-md-9 d-flex flex-wrap align-items-start felement"><div id="qtype-logiccircuit-component-picker" class="qtype-logiccircuit-component-picker" hidden></div></div></div>');
     }

@@ -15,7 +15,7 @@
 
     {{#readonly}}
         <div style="width: 100%; height: 40rem; max-height: 40rem;">
-            <logic-editor mode="tryout" showdisconnectedpins norestore>
+            <logic-editor mode="tryout" outputdefault="?" striptags="key" showdisconnectedpins norestore>
                 <script type="application/json5">
                     {{#answer_value}}
                         {{{answer_value}}}
@@ -65,7 +65,7 @@
     {{^readonly}}
         <div style="width: 100%; height: 40rem; max-height: 40rem;">
             {{#editor_mode}}
-                <logic-editor norestore mode="connect">
+                <logic-editor outputdefault="?" striptags="key" norestore mode="connect">
                     <script type="application/json5">
                         {{#answer_value}}
                             {{{answer_value}}}
@@ -78,7 +78,7 @@
                 </logic-editor>
             {{/editor_mode}}
             {{^editor_mode}}
-                <logic-editor norestore mode="design" showonly="{{components_to_show}}">
+                <logic-editor outputdefault="?" striptags="key" norestore mode="design" showonly="{{components_to_show}}">
                     <script type="application/json5">
                         {{#answer_value}}
                             {{{answer_value}}}
