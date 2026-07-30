@@ -13,12 +13,15 @@ Moodle question type plugin that serves as a wrapper around the [logic circuit e
 
 This plugin allows for the creation of logic circuit questions in Moodle quizzes. The main features are :
 
-* Definition of the initial state of the logic circuit using the logic circuit editor.
+* Definition of the reference circuit of the logic circuit using the logic circuit editor.
+    * The reference circuit is the whole key to the question, which is used to generate the test cases and to grade the students' answers.
+    * The components that are part of the key and that the students must recreate are visually tagged in the editor.
 * Automatic grading of the questions based on the predefined test cases.
-* The teacher can define the mode in which the logic circuit ecitor is presented:
+* The teacher can define the mode in which the logic circuit editor is presented:
     * **Complete** - the students can add/remove and reorganise the avaialbe circuit components
     * **Connection-only** - the students can only connect the already-present components
 * The teacher can also define which components are displayed to the students for more precise questions.
+* There is a flexible grading system that allows the teacher to define a grading mapping between the number of test cases passed and the grade obtained by the student.
 * The plugin is translated into English and French.
 
 ## Installation
