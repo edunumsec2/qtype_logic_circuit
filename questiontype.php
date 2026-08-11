@@ -16,7 +16,7 @@ require_once($CFG->libdir . '/questionlib.php');
  */
 class qtype_logiccircuit extends question_type {
     public function extra_question_fields() {
-        return array('question_logiccircuit', 'initialstate', 'editormode', 'componentstoshow', 'penaltyregime');
+        return array('question_logiccircuit', 'initialstate', 'editormode', 'gradingmode', 'componentstoshow', 'penaltyregime');
     }
 
     public function save_question($question, $form) {

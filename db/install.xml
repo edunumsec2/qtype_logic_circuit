@@ -9,8 +9,9 @@
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" NEXT="questionid"/>
         <FIELD NAME="questionid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Foreign key references question.id" PREVIOUS="id"/>
         <FIELD NAME="initialstate" TYPE="text" NOTNULL="false" SEQUENCE="false" PREVIOUS="questionid" NEXT="editormode" COMMENT="The initial state of the logic circuit editor, possibly with key and tests"/>
-        <FIELD NAME="editormode" TYPE="int" NOTNULL="true" LENGTH="2" DEFAULT="0" SEQUENCE="false" PREVIOUS="initialstate" NEXT="componentstoshow" COMMENT="Editor mode"/>
-        <FIELD NAME="componentstoshow" TYPE="text" NOTNULL="false" SEQUENCE="false" PREVIOUS="editormode" NEXT="penaltyregime" COMMENT="Logic components to show"/>
+        <FIELD NAME="editormode" TYPE="int" NOTNULL="true" LENGTH="2" DEFAULT="0" SEQUENCE="false" PREVIOUS="initialstate" NEXT="gradingmode" COMMENT="Editor mode"/>
+        <FIELD NAME="gradingmode" TYPE="int" NOTNULL="true" LENGTH="2" DEFAULT="0" SEQUENCE="false" PREVIOUS="editormode" NEXT="componentstoshow" COMMENT="Grading mode"/>
+        <FIELD NAME="componentstoshow" TYPE="text" NOTNULL="false" SEQUENCE="false" PREVIOUS="gradingmode" NEXT="penaltyregime" COMMENT="Logic components to show"/>
         <FIELD NAME="penaltyregime" TYPE="text" NOTNULL="false" SEQUENCE="false" PREVIOUS="componentstoshow" COMMENT="Progressive penalty regime"/>
       </FIELDS>
       <KEYS>

@@ -4,7 +4,7 @@
  * Logic circuit editor question type upgrade code
  *
  * @package    qtype_logiccircuit
- * @copyright  2025 Groupe Modulo
+ * @copyright  2026 Groupe Modulo
  * @license    CC BY-NC-SA
  */
 
@@ -28,6 +28,17 @@ function xmldb_qtype_logiccircuit_upgrade(int $oldversion): bool {
         }
 
         upgrade_plugin_savepoint(true, 2026042101, 'qtype', 'logiccircuit');
+    }
+
+    if ($oldversion < 2026081100) {
+        $table = new xmldb_table('question_logiccircuit');
+        $field = new xmldb_field('gradingmode', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '0', 'editormode');
+
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        upgrade_plugin_savepoint(true, 2026042102, 'qtype', 'logiccircuit');
     }
 
     // Automatically generated Moodle v4.2.0 release upgrade line.

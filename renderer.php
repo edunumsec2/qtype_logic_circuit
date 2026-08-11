@@ -4,7 +4,7 @@
  * Logic circuit question renderer class.
  *
  * @package    qtype_logiccircuit
- * @copyright  2025 Groupe Modulo
+ * @copyright  2026 Groupe Modulo
  * @license    CC BY-NC-SA
  */
 

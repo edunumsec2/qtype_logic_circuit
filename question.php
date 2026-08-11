@@ -4,7 +4,7 @@
  * Logic circuit question definition class.
  *
  * @package    qtype_logiccircuit
- * @copyright  2025 Groupe Modulo
+ * @copyright  2026 Groupe Modulo
  * @license    CC BY-NC-SA
  */
 
@@ -20,8 +20,13 @@ require_once($CFG->dirroot . '/question/type/logiccircuit/vendor/autoload.php');
  *
  */
 class qtype_logiccircuit_question extends question_graded_automatically {
+    private const GRADING_FULL_OR_NOTHING = 0;
+    private const GRADING_PROPORTIONAL = 1;
+    private const GRADING_PENALTY_REGIME = 2;
+
     public $initialstate;
     public $editormode;
+    public $gradingmode;
     public $componentstoshow;
     public $penaltyregime;
 
@@ -150,7 +155,7 @@ class qtype_logiccircuit_question extends question_graded_automatically {
             $fraction = 0;
         } else {
             $responseanalysis = $this->analyse_response($response['test_results']);
-            $fraction = $this->apply_penalty_regime($responseanalysis);
+            $fraction = $this->calculate_fraction($responseanalysis);
         }
 
         return array($fraction, question_state::graded_state_for_fraction($fraction));
@@ -241,6 +246,21 @@ class qtype_logiccircuit_question extends question_graded_automatically {
             'successful_tests' => $successfulltests,
             'failed_tests' => $failedtests
         );
+    }
+
+    private function calculate_fraction(array $responseanalysis): float {
+        switch ((int)($this->gradingmode ?? self::GRADING_FULL_OR_NOTHING)) {
+            case self::GRADING_PROPORTIONAL:
+                return $responseanalysis['fraction'];
+
+            case self::GRADING_PENALTY_REGIME:
+                return $this->apply_penalty_regime($responseanalysis);
+
+            case self::GRADING_FULL_OR_NOTHING:
+            default:
+                return !empty($responseanalysis['total_tests']) &&
+                    $responseanalysis['successful_tests'] === $responseanalysis['total_tests'] ? 1.0 : 0.0;
+        }
     }
 
     private function apply_penalty_regime(array $responseanalysis): float {

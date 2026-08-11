@@ -62,6 +62,16 @@ final class question_test extends \advanced_testcase {
 			$question->grade_response(array('answer' => $this->jsonAnswerString, 'test_results' => $this->correctTestResults))
 		);
 		$this->assertEquals(
+			array(0, question_state::$gradedwrong),
+			$question->grade_response(array('answer' => $this->jsonAnswerString, 'test_results' => $this->semiCorrectTestResults))
+		);
+	}
+
+	public function test_grading_uses_proportional_mode(): void {
+		$question = \test_question_maker::make_question('logiccircuit', 'test');
+		$question->gradingmode = 1;
+
+		$this->assertEquals(
 			array(0.92, question_state::$gradedpartial),
 			$question->grade_response(array('answer' => $this->jsonAnswerString, 'test_results' => $this->semiCorrectTestResults))
 		);
@@ -69,6 +79,7 @@ final class question_test extends \advanced_testcase {
 
 	public function test_grading_uses_progressive_penalty_regime(): void {
 		$question = \test_question_maker::make_question('logiccircuit', 'test');
+		$question->gradingmode = 2;
 		$question->penaltyregime = '10, 20, ...';
 
 		$this->assertEquals(
@@ -98,6 +109,7 @@ final class question_test extends \advanced_testcase {
 
 	public function test_grading_reuses_last_finite_penalty(): void {
 		$question = \test_question_maker::make_question('logiccircuit', 'test');
+		$question->gradingmode = 2;
 		$question->penaltyregime = '10, 25';
 
 		$this->assertEquals(
@@ -111,6 +123,7 @@ final class question_test extends \advanced_testcase {
 
 	public function test_grading_falls_back_to_linear_for_malformed_penalty_regime(): void {
 		$question = \test_question_maker::make_question('logiccircuit', 'test');
+		$question->gradingmode = 2;
 		$question->penaltyregime = '10, ...';
 
 		$this->assertEquals(

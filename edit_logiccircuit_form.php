@@ -21,6 +21,9 @@ use \core\url;
  *
  */
 class qtype_logiccircuit_edit_form extends question_edit_form {
+    private const GRADING_FULL_OR_NOTHING = 0;
+    private const GRADING_PROPORTIONAL = 1;
+    private const GRADING_PENALTY_REGIME = 2;
 
     /**
      * Add logic circuit specific form fields.
@@ -124,6 +127,22 @@ class qtype_logiccircuit_edit_form extends question_edit_form {
         $mform->addHelpButton('editormode', 'mode_dropdown', 'qtype_logiccircuit');
         $mform->setType('editormode', PARAM_INT);
 
+        $grading_options = [
+            self::GRADING_FULL_OR_NOTHING => get_string('grading_full_or_nothing', 'qtype_logiccircuit'),
+            self::GRADING_PROPORTIONAL => get_string('grading_proportional', 'qtype_logiccircuit'),
+            self::GRADING_PENALTY_REGIME => get_string('grading_penalty_regime', 'qtype_logiccircuit')
+        ];
+
+        $mform->addElement(
+            'select',
+            'gradingmode',
+            get_string('gradingmode_label', 'qtype_logiccircuit'),
+            $grading_options
+        );
+        $mform->setDefault('gradingmode', self::GRADING_FULL_OR_NOTHING);
+        $mform->addHelpButton('gradingmode', 'gradingmode', 'qtype_logiccircuit');
+        $mform->setType('gradingmode', PARAM_INT);
+
         $mform->addElement(
             'text',
             'penaltyregime',
@@ -132,6 +151,7 @@ class qtype_logiccircuit_edit_form extends question_edit_form {
         $mform->setDefault('penaltyregime', '');
         $mform->addHelpButton('penaltyregime', 'penaltyregime', 'qtype_logiccircuit');
         $mform->setType('penaltyregime', PARAM_TEXT);
+        $mform->disabledIf('penaltyregime', 'gradingmode', 'neq', self::GRADING_PENALTY_REGIME);
 
         $mform->addElement(
             'text',
@@ -159,7 +179,10 @@ class qtype_logiccircuit_edit_form extends question_edit_form {
             $errors['initialstate'] = get_string('not_valid_json', 'qtype_logiccircuit');
         }
 
-        if (!empty($data['penaltyregime'])) {
+        $gradingmode = (int)($data['gradingmode'] ?? self::GRADING_FULL_OR_NOTHING);
+        if ($gradingmode === self::GRADING_PENALTY_REGIME && empty(trim($data['penaltyregime'] ?? ''))) {
+            $errors['penaltyregime'] = get_string('penaltyregime_required', 'qtype_logiccircuit');
+        } else if ($gradingmode === self::GRADING_PENALTY_REGIME) {
             $penaltyregimeerror = $this->validate_penalty_regime($data['penaltyregime']);
             if ($penaltyregimeerror !== '') {
                 $errors['penaltyregime'] = $penaltyregimeerror;

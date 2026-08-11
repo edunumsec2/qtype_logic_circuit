@@ -88,6 +88,7 @@ final class question_type_test extends \advanced_testcase {
         // Options.
 		$jsonAnswerString = file_get_contents($CFG->dirroot . '/question/type/logiccircuit/tests/fixtures/2bit-decoder.json');
         $this->assertEquals($jsonAnswerString, $questiondata->options->initialstate);
+        $this->assertEquals(0, $questiondata->options->gradingmode);
         $this->assertEquals('', $questiondata->options->penaltyregime);
 
         // Hints.
@@ -124,6 +125,7 @@ final class question_type_test extends \advanced_testcase {
         }
 
         $this->assertEquals($questiondata->options->initialstate, $actualquestiondata->options->initialstate);
+        $this->assertEquals($questiondata->options->gradingmode, $actualquestiondata->options->gradingmode);
         $this->assertEquals($questiondata->options->penaltyregime, $actualquestiondata->options->penaltyregime);
     }
 
